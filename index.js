@@ -6,8 +6,8 @@ let config = require('config');
 let logger = config.logger;
 let colors = require('colors');
 let commandLineArgs = require('command-line-args');
-let request = require('request');
-let requestPromise = require('request-promise');
+let TCAuth = require('./lib/TCAuth');
+let tc = new TCAuth(config.TC, logger);
 
 
 const options = commandLineArgs([{
@@ -34,66 +34,20 @@ const options = commandLineArgs([{
 
 console.log(options);
 
-var userName = options.username || config.GLIB_USERNAME || '';
-var password = options.password || config.GLIB_PASSWORD || '';
-var client_id = options.clientId || config.TC_CLIENT_ID || '';
+var userName = options.username || config.GLIB.USERNAME || '';
+var password = options.password || config.GLIB.PASSWORD || '';
+
 var title = options.title || ''; //CWD-- TODO: pull out from file ?
+var srcFile = options.file || 'challenge.md'; //CWD-- defaulting to this for now
 
-if (options.file) {
-    console.log('using ' + options.file + ' to create challenge');
+//CWD-- todo read in file contents if it extsts
 
-    var tokenRequestPayload = {
-        "username": userName,
-        "password": password,
-        "client_id": client_id,
-        "sso": false,
-        "scope": "openid profile offline_access",
-        "response_type": "token",
-        "connection": "LDAP",
-        "grant_type": "password",
-        "device": "Browser"
-    };
+if (srcFile) {
+    console.log('using ' + srcFile + ' to create challenge');
 
-    var reqOpts = {
-        method: 'POST',
-        uri: config.AUTH_URL,
-        json: true,
-        headers: {
-            'cache-control': 'no-cache',
-            'content-type': 'application/json'
-        },
-        body: tokenRequestPayload
-    };
+    tc.login(userName, password, function(err, token) {
+        logger.debug('we have a token: %s', token);
 
-    requestPromise(reqOpts).then(function(res) {
-        console.log(res);
-        var accessToken = res.id_token;
-
-        var glibResOpts = {
-            method: 'POST',
-            uri: config.GLIB_URL,
-            header: {
-                'Content-Type': 'application/json',
-                'authorization': 'Bearer ' + accessToken
-            },
-            body: {
-                title: title,
-                description: '', //CWD-- fill in from file
-                submissionReq: '', //CWD-- fill in from file or prompt
-                tc_project_id: '' //CWD-- fetch project Id from CLI
-            },
-            json: true
-        };
-
-        console.log(glibResOpts);
-        requestPromise(glibResOpts).then(function(resGLIB) {
-            console.log(resGLIB);
-        }).catch(function(err) {
-            console.log(err);
-        });
-
-    }).catch(function(err) {
-        console.log(err);
     });
 
 } else {

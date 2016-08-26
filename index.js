@@ -6,6 +6,7 @@ let config = require('config');
 let logger = config.logger;
 let colors = require('colors');
 let commandLineArgs = require('command-line-args');
+let glib = require('./lib/GLIB.js');
 let TCAuth = require('./lib/TCAuth');
 let tc = new TCAuth(config.TC, logger);
 
@@ -45,9 +46,19 @@ var srcFile = options.file || 'challenge.md'; //CWD-- defaulting to this for now
 if (srcFile) {
     console.log('using ' + srcFile + ' to create challenge');
 
-    tc.login(userName, password, function(err, token) {
-        logger.debug('we have a token: %s', token);
-
+    tc.login(userName, password, function(err, accessToken) {
+        if (err) {
+            logger.error(err);
+        } else {
+            logger.debug('we have a token: %s', accessToken);
+            glib.createChallenge(config.GLIB, accessToken, srcFile, function(err, res) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(res);
+                }
+            })
+        }
     });
 
 } else {

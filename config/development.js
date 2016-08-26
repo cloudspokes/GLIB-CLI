@@ -12,7 +12,7 @@ config.TC.CLIENT_ID = process.env.TC_CLIENT_ID || '6ZwZEUo2ZK4c50aLPpgupeg5v2Ffx
 config.GLIB = {};
 config.GLIB.HOST = process.env.GLIB_HOST || 'http://glib-prod.herokuapp.com';
 config.GLIB.ENDPOINT = process.env.GLIB_ENDPOINT || '/challenges/cli';
-config.GLIB.URL = config.GLIB_HOST + config.GLIB_ENDPOINT;
+config.GLIB.URL = config.GLIB.HOST + config.GLIB.ENDPOINT;
 config.GLIB.USERNAME = process.env.GLIB_USERNAME || '';
 config.GLIB.PASSWORD = process.env.GLIB_PASSWORD || '';
 
